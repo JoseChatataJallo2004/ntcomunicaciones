@@ -1,0 +1,137 @@
+SELECT * FROM Trabajadores;
+
+
+
+
+CREATE TABLE Documento (
+    iddocumento INT PRIMARY KEY ,
+    TipoDocumento VARCHAR(50) NOT NULL
+);
+
+
+
+INSERT INTO Documento (iddocumento, TipoDocumento) VALUES
+(1, 'DNI'),
+(2, 'Pasaporte'),
+(3, 'Licencia de Conducir');
+
+select * from Documento;
+
+
+
+
+CREATE TABLE Trabajadores (
+    Id INT IDENTITY(1,1) NOT NULL,
+    TipoDocumento int, -- Esta será la clave foránea
+    NumeroDocumento VARCHAR(50) UNIQUE NULL,
+    Nombres VARCHAR(500) NULL,
+    Sexo VARCHAR(1) NULL,
+    IdDepartamento INT NULL,
+    IdProvincia INT NULL,
+    IdDistrito INT NULL,
+	fecharegistro datetime  default getdate()
+    PRIMARY KEY (Id),
+    FOREIGN KEY (TipoDocumento) REFERENCES Documento(iddocumento) -- Clave foránea
+);
+
+
+
+
+INSERT INTO Trabajadores (TipoDocumento, NumeroDocumento, Nombres, Sexo, IdDepartamento, IdProvincia, IdDistrito)
+VALUES
+(1, '12345678', 'Juan Perez', 'M', 15, 128, 3152), 
+(2, 'ABC12345', 'Ana Gomez', 'F', 15, 128, 3156); 
+
+select * from Departamento
+select * from Provincia where IdDepartamento=15
+select * from Distrito where IdProvincia=128
+
+select * from Documento;
+
+
+
+select t.Id,d.iddocumento , d.TipoDocumento ,t.NumeroDocumento,t.Nombres,t.Sexo ,de.Id[iddepartamento],de.NombreDepartamento ,pro.Id[idprovincia],pro.NombreProvincia ,dis.Id[iddistrito], dis.NombreDistrito from Trabajadores as t inner join Documento as d on t.TipoDocumento =d.iddocumento inner join Departamento as de on
+t.IdDepartamento=de.Id inner join Provincia as pro on t.IdProvincia=pro.Id inner join Distrito as dis on t.IdDistrito=dis.Id
+
+
+create procedure sp_RegistrarTrabajador(
+@TipoDocumento int,	
+@NumeroDocumento VARCHAR(50),
+@Nombres VARCHAR(500) NULL,
+@Sexo VARCHAR(1) NULL,
+@IdDepartamento INT NULL,
+@IdProvincia INT NULL,
+@IdDistrito INT NULL,
+@mensaje varchar(500) output, --es un parametro de salida para pasar un mensaje como diciendo registrado correctamente
+@resultado int output) --es un parametro de salida devuelve un resultado numerico desde el sp
+as
+begin 
+set @resultado=0
+if not exists (select * from Trabajadores where NumeroDocumento=@NumeroDocumento)
+begin 
+insert into Trabajadores(TipoDocumento,NumeroDocumento,Nombres,Sexo,IdDepartamento,IdProvincia,IdDistrito)values ( @TipoDocumento,@NumeroDocumento,@Nombres,@Sexo,@IdDepartamento,@IdProvincia, @IdDistrito)
+set @resultado =SCOPE_IDENTITY()
+end
+else
+set @mensaje='El Numero de Documento ingresado ya existe en el Sistema'
+end
+
+
+
+
+DECLARE @outputMensaje VARCHAR(500);
+DECLARE @outputResultado INT;
+
+EXEC sp_RegistrarTrabajador 
+    @TipoDocumento = 1,
+    @NumeroDocumento = 'ABC123403',
+    @Nombres = 'Jose Chatata',
+    @Sexo = 'M',
+    @IdDepartamento = 15,
+    @IdProvincia = 128,
+    @IdDistrito = 3152,
+    @mensaje = @outputMensaje OUTPUT,
+    @resultado = @outputResultado OUTPUT;
+
+-- Ahora puedes usar los valores de salida
+PRINT 'Mensaje: ' + ISNULL(@outputMensaje, 'No hay mensaje');
+PRINT 'Resultado: ' + CAST(@outputResultado AS VARCHAR);
+
+select * from Trabajadores
+
+
+
+
+//////Actualizar Trabajador
+
+create procedure sp_ActualizarTrabajador(
+@Id int,
+@TipoDocumento int,	
+@NumeroDocumento VARCHAR(50),
+@Nombres VARCHAR(500) NULL,
+@Sexo VARCHAR(1) NULL,
+@IdDepartamento INT NULL,
+@IdProvincia INT NULL,
+@IdDistrito INT NULL,
+@mensaje varchar(500) output, --es un parametro de salida para pasar un mensaje como diciendo registrado correctamente
+@resultado int output) --es un parametro de salida devuelve un resultado numerico desde el sp
+as
+begin 
+set @resultado=0
+if not exists (select * from Trabajadores where NumeroDocumento=@NumeroDocumento and Id !=@Id)
+begin 
+update top (1) Trabajadores set
+TipoDocumento=@TipoDocumento,
+NumeroDocumento=@NumeroDocumento,
+Nombres=@Nombres,
+Sexo=@Sexo,
+IdDepartamento=@IdDepartamento,
+IdProvincia=@IdProvincia,
+IdDistrito=@IdDistrito
+where Id=@Id
+set @resultado =1
+end
+else
+set @mensaje='El Numero de Documento ingresado ya existe en el Sistema'
+end
+

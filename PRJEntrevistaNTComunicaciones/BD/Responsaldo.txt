@@ -1,0 +1,133 @@
+﻿create database CasoPracticoNTComunicacion;
+
+use CasoPracticoNTComunicacion;
+
+
+CREATE TABLE Tipofirma (
+    idtipofirma int identity(1,1) PRIMARY KEY NOT NULL,
+    descripcion VARCHAR(100) NOT NULL
+);
+
+INSERT INTO Tipofirma (descripcion) VALUES
+    ('Firma Digital'),
+    ('Rubrica escaneada'),
+    ('Firma electrónica');
+
+
+
+
+      CREATE TABLE firmaDigital (
+    id_firma INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    id_tipo_firma INT FOREIGN KEY REFERENCES Tipofirma(idtipofirma) NOT NULL,
+    razon_social VARCHAR(200) NOT NULL,
+    representante_legal VARCHAR(200) NOT NULL,
+    empresa_acreditadora VARCHAR(200) NOT NULL,
+    fecha_emision DATETIME NOT NULL,
+    fecha_vencimiento DATETIME NOT NULL,
+	extensionruta varchar(250) null,
+    ruta_rubrica VARCHAR(250)  NULL,
+	extensioncertificado varchar(255)null,
+    certificado_digital VARCHAR(250)  NULL,
+    fechaderegistro DATETIME DEFAULT GETDATE() NOT NULL,
+    eliminado BIT DEFAULT 1 NOT NULL
+);
+
+
+
+INSERT INTO firmaDigital (id_tipo_firma, razon_social, representante_legal, empresa_acreditadora, fecha_emision, fecha_vencimiento,extensionruta ,ruta_rubrica,extensioncertificado, certificado_digital)
+VALUES
+    (1, 'Empresa A', 'Representante A', 'Acreditadora A', '2024-01-25T12:00:00', '2024-02-25T12:00:00', '/ruta1/rubrica1.png','R1' , '/cert1/certificado1.pfx' ,'C1'),
+    (2, 'Empresa B', 'Representante B', 'Acreditadora B', '2024-01-26T12:00:00', '2024-02-26T12:00:00', '/ruta2/rubrica2.png','R2', '/cert2/certificado2.pfx','C2'),
+    (3, 'Empresa C', 'Representante C', 'Acreditadora C', '2024-01-27T12:00:00', '2024-02-27T12:00:00', '/ruta3/rubrica3.png','R3', '/cert3/certificado3.pfx','C3');
+
+
+
+
+
+
+    ////STORE PROCEDURE
+
+
+    
+	CREATE PROCEDURE ObtenerListadoFirmasDigitales
+AS
+BEGIN
+    SELECT
+        fd.id_firma,
+        fd.razon_social,
+        tf.idtipofirma,
+        tf.descripcion AS tipo_firma,
+        fd.representante_legal,
+        fd.empresa_acreditadora,
+        fd.fecha_emision,
+        fd.fecha_vencimiento
+    FROM
+        firmaDigital fd
+    INNER JOIN
+        TipoFirma tf ON fd.id_tipo_firma = tf.idtipofirma
+    WHERE
+        fd.eliminado = 1;
+END;
+
+
+
+
+
+ALTER   proc [dbo].[sp_registrar](
+@id_tipo_firma INT,
+ @razon_social VARCHAR(200),
+ @representante_legal VARCHAR(200),
+ @empresa_acreditadora VARCHAR(200),
+ @fecha_emision DATETIME,
+ @fecha_vencimiento DATETIME,
+@mensaje varchar(500)output,
+@resultado int output)
+as
+begin
+set @resultado=0
+if not exists(select * from firmaDigital where razon_social=@razon_social)
+begin
+insert into firmaDigital(id_tipo_firma,razon_social,representante_legal,empresa_acreditadora,fecha_emision,fecha_vencimiento)values 
+(@id_tipo_firma,@razon_social,@representante_legal,@empresa_acreditadora,@fecha_emision,@fecha_vencimiento)
+set @resultado=SCOPE_IDENTITY()
+end
+else 
+set @mensaje ='La Razon Social ya existe en la empresa'
+end
+
+
+
+
+
+--Actualizar
+
+create  or ALTER proc sp_editar(
+@idfirma int,
+@id_tipo_firma INT,
+ @razon_social VARCHAR(200),
+ @representante_legal VARCHAR(200),
+ @empresa_acreditadora VARCHAR(200),
+ @fecha_emision DATETIME,
+ @fecha_vencimiento DATETIME,
+
+
+@mensaje varchar(500)output,
+@resultado int output)
+as
+begin 
+set @resultado=0
+if not exists (select * from firmaDigital where razon_social=@razon_social and id_firma!=@idfirma)
+begin
+update firmaDigital set
+id_tipo_firma=@id_tipo_firma,
+razon_social=@razon_social,
+representante_legal=@representante_legal,
+empresa_acreditadora=@empresa_acreditadora,
+fecha_emision=@fecha_emision,
+fecha_vencimiento=@fecha_vencimiento
+where id_firma=@idfirma
+set @resultado=1
+end
+else
+set @mensaje ='La Razon de la Empresa que vas actualizar ya existe en el Sistema'
+end

@@ -1,0 +1,523 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+
+
+
+
+
+<h1 class="h3 mb-2 text-gray-800" style="font-weight: bold;">Configurar Firmas</h1>
+<br />
+
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-dark">Lista de Certificados por Empresa</h6>
+        <br />
+        <button type="button"  class="btn" style="background-color: #218f8b; color: #fff;" onclick="abrirModal(null)">Agregar Nuevo</button>
+        <br />
+      
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        
+                        <th>Tipo de Firma</th>
+                        <th>Razon Social/Persona</th>
+                        <th>Representante Legal</th>
+                        <th>Empresa Acreditaroda</th>
+                        <th>Fecha Emisión</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Opcciones</th>
+
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+             
+
+<!-- Modal -->
+<div class="modal fade" id="FormModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="exampleModalLabel">Gestion de Firmas</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="contenedor" class="row" >
+                    <input id="txtid" type="hidden" value="0">
+
+                    <div class="col-sm-5">
+                        <div class="form-group">
+                            <label for="cbotipofirmas">Tipo de Firma</label>
+                            <select id="cbotipofirmas" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtnrodocumento">Razon Social /Persona</label>
+                            <input type="text" class="form-control" id="txtrazonsocial" name="razonsocial" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtnrodocumento">Representante Legal</label>
+                            <input type="text" class="form-control" id="txtrepresentantelegal" name="representantelegal" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtnrodocumento">Empresa Acreditadora</label>
+                            <input type="text" class="form-control" id="txtempresacreditaro" name="empresacreditaro" autocomplete="off" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="txtnrodocumento">Fecha  Emision</label>
+                            <input type="date" class="form-control" id="txtfechaemision" name="fechaemision" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="txtnrodocumento">Fecha Vencimiento</label>
+                            <input type="date" class="form-control" id="txtfechavencimiento" name="fechavencimiento" autocomplete="off" required>
+                        </div>
+
+                        
+
+                    </div>
+                    <div class="col-sm-7">
+                        <br />
+                        <h2 style="text-align:center"> <strong>Subir Certificado y Firmas</strong>  </h2>
+                        <p style="text-align:center">Este Certificado se encriptara en nuestro servidor</p>
+                      
+                        <p>Ruta Escaneada</p>
+                        <input style="align-content:center" type="file" id="txtrubricaescaneada" name="rubricaescaneada" autocomplete="off" accept=".jpg, .png" onchange="mostrarimagen(this)"> 
+                        <img id="fotofirma" height="180" width="200" class="border rounded mx-auto d-block img-fluid" />
+
+                        <br />
+                        <p>Certificado Digital</p>
+                        <input style="align-content:center" type="file" id="txtsubircertificado" name="subircertificado" autocomplete="off" accept=".pdf, .doc, .docx, .xls, .xlsx, .txt" onchange="mostrararchivo(this)">
+                        <img id="archivofirma" height="90" width="180" class="border rounded mx-auto d-block img-fluid" alt="Lo Lamentamos no podemos mostrar los certificados son Derechos de la empresa" />
+
+                    </div>
+
+
+                   
+                </form>
+
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div id="mensajeError" class="alert alert-danger" role="alert">
+                            A simple danger alert—check it out!
+                        </div>
+                    </div>
+                </div>
+
+            
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarFirma()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+@section scripts{
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
+
+    <script>
+
+
+        /////////////////////////////////////////
+
+        var tabladata;
+        var filaseleccionada;
+
+
+        //para que la imagen se muestre en la img
+        function mostrarimagen(input) {
+            if (input.files) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#fotofirma").attr("src", e.target.result).width(200).height(180)
+                }
+                reader.readAsDataURL(input.files[0]);
+
+            }
+        }
+        //para ver el archivo en la img
+        function mostrararchivo(input) {
+            if (input.files) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#archivofirma").attr("src", e.target.result).width(200).height(180)
+                }
+                reader.readAsDataURL(input.files[0]);
+
+            }
+        }
+
+
+
+        tabladata = $("#dataTable").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+                url: '@Url.Action("ListadoFirmasDigitales", "Firmas")',
+                type: 'GET',
+                dataType: 'json'
+            },
+            "columns": [
+               
+                {
+                    "data": "otipofirma", "render": function (data) {
+                        return data.descripcion
+                    }
+                },
+                { "data": "razonSocial" },
+                { "data": "representanteLegal" },
+                { "data": "empresaAcreditadora" },
+
+                {
+                    "data": "fechaEmision",
+                
+                    "render": function (data, type, row) {
+                        // Solo formatear en la vista, no en la ordenación o búsqueda
+                        if (type === 'display') {
+                            return new Date(data).toLocaleDateString('es-ES');
+                        }
+                        return data;
+                    }
+                
+                },
+                {
+                    "data": "fechaVencimiento",
+                    "render": function (data, type, row) {
+                        // Solo formatear en la vista, no en la ordenación o búsqueda
+                        if (type === 'display') {
+                            return new Date(data).toLocaleDateString('es-ES');
+                        }
+                        return data;
+                    }
+
+                },
+
+                //botones
+                {
+                    "defaultContent": '<button type="button" class="btn btn-primary btn-sm btn-editar" style="display:none;"> <i class="fas fa-pen"></i></button> ' +
+                        '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar" style="display:none;"> <i class="fas fa-trash"></i></button>' +
+                        '<button type="button" class="btn btn-secondary btn-sm btn-detalles"> <i class="fas fa-ellipsis-v"></i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+                }
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json"
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fas fa-file-excel"></i> Exportar Excel',
+                    filename: 'Reportes_Certificados',
+                    title: 'Lista de Registros',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                    },
+                    className: 'btn-exportar-excel ml-auto', // Agrega ml-auto para alinear a la derecha
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: 'Exportar PDF',
+                    filename: 'Reportes_Certificados',
+                    title: 'Lista de Registros',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5]
+                    },
+                    className: 'btn-exportar-pdf',
+                }
+            ]
+
+
+        });
+
+
+        $('#dataTable tbody').on('click', 'td .btn-detalles', function () {
+            var tr = $(this).closest('tr');
+            var row = tabladata.row(tr);
+
+            // Alternar la visibilidad de los botones en la fila actual
+            tr.find('.btn-editar, .btn-eliminar').toggle();
+
+            // Alternar la clase de resaltado en la fila actual
+            tr.toggleClass('selected');
+        });
+
+
+
+
+
+        //llenar el combobox Tipo de Firmas
+   
+        jQuery.ajax({
+            url: '@Url.Action("ListadoTiposFirmas", "Firmas")',
+            type: "GET",
+            data: null,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                console.log(data);
+
+                // Verificar que la propiedad data y data.data estén presentes
+                if (data && data.data) {
+                    // Limpiar el combo box y agregar la opción "Seleccione"
+                    $("#cbotipofirmas").empty();
+                    $("<option>").attr({ "value": "0", "disabled": "true" }).text("Seleccione").appendTo("#cbotipofirmas");
+
+                    // Llenar el combo box con los datos obtenidos
+                    $.each(data.data, function (index, item) {
+                        $("<option>").attr({ "value": item.idtipofirma }).text(item.descripcion).appendTo("#cbotipofirmas");
+                    });
+                } else {
+                    console.error("No se recibió data o data.data en ListadoTiposFirmas.");
+                }
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+
+
+
+        //Editar
+        $("#dataTable tbody").on("click", '.btn-editar', function () {
+            // Use `closest` to find the closest `tr` parent
+            filaseleccionada = $(this).closest("tr");
+            var data = tabladata.row(filaseleccionada).data();
+            console.log(data);
+            abrirModal(data);
+        });
+
+        //Eliminar
+        function eliminarfirmasgeneral(idFirma) {
+            Swal.fire({
+                title: '¿Eliminar Firmas?',
+                text: '¿Está seguro de eliminar el registro?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminarlo'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Realizar la eliminación en la base de datos
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("EliminarFirmas", "Firmas")',
+                        data: { id: idFirma },
+                        success: function (data) {
+                            if (data.resultado) {
+                                tabladata.ajax.reload();
+                                Swal.fire('Eliminado', 'El Registro ha sido eliminado correctamente.', 'success');
+                            } else {
+                                Swal.fire('Error', 'No se pudo eliminar el Registro.', 'error');
+                            }
+                        },
+                        error: function (error) {
+                            Swal.fire('Error', 'Error en la solicitud.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // Manejador de eventos para el botón de eliminar en la tabla
+        $('#dataTable').on('click', '.btn-eliminar', function () {
+            filaseleccionada = tabladata.row($(this).closest('tr')).data();
+            eliminarfirmasgeneral(filaseleccionada.idFirma);
+        });
+
+
+
+
+
+        //Abrir Modal
+        function abrirModal(json) {
+           //limpiarlo
+            $("#txtid").val(0);
+            $("#cbotipofirmas").val($("#cbotipofirmas option:first").val());
+            $("#txtrazonsocial").val("");
+            $("#txtrepresentantelegal").val("");
+            $("#txtempresacreditaro").val("");
+
+            $("#txtfechaemision").val("");
+            $("#txtfechavencimiento").val("");
+
+            $("#txtrubricaescaneada").val("");
+            $("#fotofirma").removeAttr("src");
+
+            $("#txtsubircertificado").val("");
+            $("#archivofirma").removeAttr("src");
+
+
+            $("#mensajeError").hide();
+
+
+            $("#FormModal").modal("show");
+            if(json!=null){
+                $("#txtid").val(json.idFirma);
+                $("#cbotipofirmas").val(json.otipofirma.idtipofirma);
+                $("#txtrazonsocial").val(json.razonSocial);
+                $("#txtrepresentantelegal").val(json.representanteLegal);
+                $("#txtempresacreditaro").val(json.empresaAcreditadora);
+
+                $("#txtfechaemision").val(json.fechaEmision ? json.fechaEmision.substring(0, 10) : "");
+                $("#txtfechavencimiento").val(json.fechaVencimiento ? json.fechaVencimiento.substring(0, 10) : "");
+
+
+                //pinta la imagen
+
+                jQuery.ajax({
+                    url: '@Url.Action("ImagenFirmas","Firmas")',
+                    type: "POST",
+                    data: JSON.stringify({ id: json.idFirma }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.conversion) {
+                            $("#fotofirma").attr({ "src": "data:image/" + data.extension + ";base64," + data.textobase64 });
+                        }
+
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+
+                });
+
+                //pinta el archivo
+
+                jQuery.ajax({
+                    url: '@Url.Action("ArchivoFirmas","Firmas")',
+                    type: "POST",
+                    data: JSON.stringify({ id: json.idFirma }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.conversion) {
+                            $("#archivofirma").attr({ "src": "data:image/" + data.extension + ";base64," + data.textobase64 });
+                        }
+
+                    },
+                    error: function (error) {
+                        console.log(error)
+                    }
+
+                });
+
+            }
+            $("#FormModal").modal("show");
+
+        }
+
+
+        function guardarFirma() {
+            var imagenRubrica = $("#txtrubricaescaneada")[0].files[0];
+            var archivoCertificado = $("#txtsubircertificado")[0].files[0];
+
+            var firma = {
+                idFirma: $("#txtid").val(),
+                otipofirma: {
+
+                    idtipofirma: $("#cbotipofirmas option:selected").val(),
+                    descripcion: $("#cbotipofirmas option:selected").text
+
+
+                },
+                razonSocial: $("#txtrazonsocial").val(),
+                representanteLegal: $("#txtrepresentantelegal").val(),
+                empresaAcreditadora: $("#txtempresacreditaro").val(),
+                fechaEmision: $("#txtfechaemision").val(),
+                fechaVencimiento: $("#txtfechavencimiento").val()
+            };
+
+            var formData = new FormData();
+            formData.append("archivoImagen", imagenRubrica);
+            formData.append("archivoArchivo", archivoCertificado);
+            formData.append("obj", JSON.stringify(firma));
+
+            $.ajax({
+                url: '/Firmas/GuardarFirmasGeneral',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    //Agregar
+                    if (firma.idFirma == 0) {
+                        if (data.idGenerado != 0) {
+                            firma.idFirma = data.idGenerado;
+                            tabladata.row.add(firma).draw(false);
+                            $("#FormModal").modal("hide");
+                            // Actualizar DataTable
+                            tabladata.ajax.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }//editar
+                    else {
+                        if (data.operacionExitosa) {
+                            // Actualizar fila en la tabla de firmas
+                            tabladata.row(filaseleccionada).data(firma).draw(false);
+                            filaseleccionada=null;
+                            $("#FormModal").modal("hide");
+                            // Actualizar DataTable
+                            tabladata.ajax.reload();
+
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }
+                    console.log(data);
+                },
+                error: function (error) {
+                    console.log(error);
+                },
+                beforeSend: function () {
+                    // Código de antes de enviar la solicitud
+                },
+            });
+        }
+
+
+
+
+    </script>
+
+
+
+}
